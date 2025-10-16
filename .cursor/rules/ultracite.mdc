@@ -190,7 +190,7 @@ Ultracite enforces strict type safety, accessibility standards, and consistent c
 - Don't export imported variables.
 - Don't add type annotations to variables, parameters, and class properties that are initialized with literal expressions.
 - Don't use TypeScript namespaces.
-- Don't use non-null assertions with the `!` postfix operator.
+- Non-null assertions with the `!` postfix operator are allowed when necessary.
 - Don't use parameter properties in class constructors.
 - Don't use user-defined types.
 - Use `as const` instead of literal types and type annotations.
@@ -202,7 +202,7 @@ Ultracite enforces strict type safety, accessibility standards, and consistent c
 - Don't use TypeScript const enum.
 - Don't declare empty interfaces.
 - Don't let variables evolve into any type through reassignments.
-- Don't use the any type.
+- The any type is allowed when necessary, but should be used sparingly.
 - Don't misuse the non-null assertion operator (!) in TypeScript files.
 - Don't use implicit any type on variable declarations.
 - Don't merge interfaces and classes unsafely.
@@ -251,7 +251,7 @@ Ultracite enforces strict type safety, accessibility standards, and consistent c
 - Don't compare against -0.
 - Don't use labeled statements that aren't loops.
 - Don't use void type outside of generic or return types.
-- Don't use console.
+- Console usage is allowed for debugging and logging purposes.
 - Don't use control characters and escape sequences that match control characters in regular expression literals.
 - Don't use debugger.
 - Don't assign directly to document.cookie.
@@ -328,6 +328,6 @@ try {
 try {
   return await fetchData();
 } catch (e) {
-  console.log(e);
+  // Silent failure - error is not handled properly
 }
 ```
