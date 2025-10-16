@@ -194,3 +194,47 @@ export function getNextLyric(
 ): LyricLine | null {
   return lyrics.find((lyric) => lyric.startTime > currentTime) ?? null
 }
+
+/**
+ * 根据当前时间获取应该显示的歌词索引
+ * @param lyrics - 歌词行数组
+ * @param currentTime - 当前时间(秒)
+ * @returns 当前应该显示的歌词在数组中的索引,如果没有则返回 -1
+ */
+export function getCurrentLyricIndex(
+  lyrics: LyricLine[],
+  currentTime: number
+): number {
+  return lyrics.findIndex(
+    (lyric) => currentTime >= lyric.startTime && currentTime <= lyric.endTime
+  )
+}
+
+/**
+ * 根据当前时间获取最后已播放过的歌词索引
+ * 当在歌词间隔期间,返回上一句歌词的索引而不是 -1
+ * @param lyrics - 歌词行数组
+ * @param currentTime - 当前时间(秒)
+ * @returns 当前或最近已播放过的歌词索引,如果一句都没播放则返回 -1
+ */
+export function getLastPlayedLyricIndex(
+  lyrics: LyricLine[],
+  currentTime: number
+): number {
+  // 先尝试获取当前正在播放的歌词
+  const currentIndex = getCurrentLyricIndex(lyrics, currentTime)
+  if (currentIndex !== -1) {
+    return currentIndex
+  }
+
+  // 如果当前没有歌词在播放,找到最后一句已经播放过的歌词
+  // 即 endTime < currentTime 的最后一句
+  for (let i = lyrics.length - 1; i >= 0; i--) {
+    if (lyrics[i].endTime < currentTime) {
+      return i
+    }
+  }
+
+  // 如果所有歌词都还没开始,返回 -1
+  return -1
+}

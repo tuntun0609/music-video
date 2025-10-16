@@ -54,7 +54,7 @@ export const Music = ({ lyrics }: MusicProps) => {
 
   return (
     <div
-      className="flex h-full w-full flex-col"
+      className="flex h-full w-full flex-col p-12"
       style={{
         background: `linear-gradient(135deg, 
           hsl(${colorScheme.colors[0].hue}, ${colorScheme.colors[0].saturation}%, ${colorScheme.colors[0].lightness}%), 
@@ -65,13 +65,27 @@ export const Music = ({ lyrics }: MusicProps) => {
       {/* 音频 */}
       <Html5Audio src={staticFile('誓燃山河.mp3')} />
 
-      {/* 唱片区域 - 占据较大部分 (2/3) */}
-      <div className="flex flex-[2] items-center justify-center">
+      {/* 唱片区域 - 主视觉焦点 */}
+      <div className="flex flex-[2.5] items-center justify-center">
         <VinylRecord frame={frame} />
       </div>
 
-      {/* 歌词区域 - 占据较小部分 (1/3) */}
-      <div className="flex-1">
+      {/* 歌曲名字 - 适中大小 */}
+      <div className="flex flex-[0.8] items-center justify-center py-4">
+        <h1
+          className="font-bold text-white tracking-wider"
+          style={{
+            fontSize: '4rem',
+            letterSpacing: '0.15em',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          誓燃山河
+        </h1>
+      </div>
+
+      {/* 歌词区域 - 次要信息 */}
+      <div className="flex-[1.8] pt-2">
         <Lyrics currentTime={currentTime} lyrics={lyrics} />
       </div>
     </div>
