@@ -1,24 +1,37 @@
+import { Img, staticFile, useVideoConfig } from 'remotion'
+
 type VinylRecordProps = {
   readonly frame: number
 }
 
 export const VinylRecord = ({ frame }: VinylRecordProps) => {
-  // 根据帧数计算旋转角度
-  const rotation = frame * 2 // 可以调整旋转速度
+  const { width } = useVideoConfig()
+
+  // 根据帧数计算旋转角度,持续旋转
+  const rotation = frame * 0.5 // 每帧旋转2度,可以调整旋转速度
+
+  // 唱片尺寸为视频宽度的二分之一
+  const recordSize = width / 2
 
   return (
     <div className="flex h-full items-center justify-center">
       <div
         className="relative"
         style={{
+          width: recordSize,
+          height: recordSize,
           transform: `rotate(${rotation}deg)`,
         }}
       >
-        {/* 唱片外观占位 */}
-        <div className="h-64 w-64 rounded-full border-8 border-gray-800 bg-black">
-          {/* 唱片中心 */}
-          <div className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 h-16 w-16 transform rounded-full border-4 border-gray-700 bg-gray-900" />
-        </div>
+        {/* 使用 cover.png 作为唱片封面,外围添加淡黑色边框 */}
+        <Img
+          alt="Album Cover"
+          className="h-full w-full rounded-full object-cover"
+          src={staticFile('cover.png')}
+          style={{
+            border: '28px solid rgba(0, 0, 0, 0.1)',
+          }}
+        />
       </div>
     </div>
   )
