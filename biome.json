@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite"],
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "master"
+  },
+  "files": {
+    "includes": ["**/*", "!src/components/ui"]
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded",
+      "quoteStyle": "single"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    },
+    "rules": {
+      "style": {
+        "noNonNullAssertion": "off",
+        "noMagicNumbers": "off"
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off",
+        "noConsole": "off",
+        "noExplicitAny": "off"
+      },
+      "performance": {
+        "noNamespaceImport": "off",
+        "noBarrelFile": "off"
+      }
+    }
+  }
+}
