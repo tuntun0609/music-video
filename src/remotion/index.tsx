@@ -1,4 +1,4 @@
 import { registerRoot } from 'remotion'
-import { RemotionRoot } from './main'
+import { RemotionRoot } from './root'
 
 registerRoot(RemotionRoot)
