@@ -13,8 +13,13 @@ import {
   extractDominantHue,
   generateColorScheme,
 } from './utils/color-extractor'
+import type { LyricLine } from './utils/srt-parser'
 
-export const Music = () => {
+type MusicProps = {
+  lyrics: LyricLine[]
+}
+
+export const Music = ({ lyrics }: MusicProps) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
@@ -67,7 +72,7 @@ export const Music = () => {
 
       {/* 歌词区域 - 占据较小部分 (1/3) */}
       <div className="flex-1">
-        <Lyrics currentTime={currentTime} />
+        <Lyrics currentTime={currentTime} lyrics={lyrics} />
       </div>
     </div>
   )
