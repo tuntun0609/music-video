@@ -10,7 +10,8 @@
     "format": "biome format --write",
     "remotion:dev": "remotion dev",
     "remotion:build": "remotion build",
-    "remotion:studio": "remotion studio"
+    "remotion:studio": "remotion studio",
+    "prepare": "husky"
   },
   "dependencies": {
     "@remotion/cli": "4.0.363",
