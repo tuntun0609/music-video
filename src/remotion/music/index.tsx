@@ -1,3 +1,4 @@
+import { loadFont } from '@remotion/google-fonts/MaShanZheng'
 import { useEffect, useState } from 'react'
 import {
   Html5Audio,
@@ -14,6 +15,9 @@ import {
   generateColorScheme,
 } from './utils/color-extractor'
 import type { LyricLine } from './utils/srt-parser'
+
+// 加载中文毛笔字体 - 马善政楷书(更易读)
+const { fontFamily } = loadFont()
 
 type MusicProps = {
   lyrics: LyricLine[]
@@ -66,18 +70,18 @@ export const Music = ({ lyrics }: MusicProps) => {
       <Html5Audio src={staticFile('誓燃山河.mp3')} />
 
       {/* 唱片区域 - 主视觉焦点 */}
-      <div className="flex flex-[2.5] items-center justify-center">
+      <div className="flex flex-[2] items-center justify-center">
         <VinylRecord frame={frame} />
       </div>
 
-      {/* 歌曲名字 - 适中大小 */}
-      <div className="flex flex-[0.8] items-center justify-center py-4">
+      {/* 歌曲名字 - 突出显示 */}
+      <div className="flex flex-[0.6] items-center justify-center">
         <h1
-          className="font-bold text-white tracking-wider"
+          className="font-bold text-shadow-lg text-white tracking-wider"
           style={{
-            fontSize: '4rem',
-            letterSpacing: '0.15em',
-            textShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+            fontSize: '5.5rem',
+            letterSpacing: '0.2em',
+            fontFamily,
           }}
         >
           誓燃山河
@@ -86,7 +90,11 @@ export const Music = ({ lyrics }: MusicProps) => {
 
       {/* 歌词区域 - 次要信息 */}
       <div className="flex-[1.8] pt-2">
-        <Lyrics currentTime={currentTime} lyrics={lyrics} />
+        <Lyrics
+          currentTime={currentTime}
+          fontFamily={fontFamily}
+          lyrics={lyrics}
+        />
       </div>
     </div>
   )

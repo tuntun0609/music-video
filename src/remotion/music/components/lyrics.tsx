@@ -8,9 +8,10 @@ import {
 type LyricsProps = {
   readonly currentTime: number
   readonly lyrics: LyricLine[]
+  readonly fontFamily: string
 }
 
-export const Lyrics = ({ currentTime, lyrics }: LyricsProps) => {
+export const Lyrics = ({ currentTime, lyrics, fontFamily }: LyricsProps) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
@@ -134,6 +135,7 @@ export const Lyrics = ({ currentTime, lyrics }: LyricsProps) => {
                 style={{
                   fontSize: '2.5rem',
                   color: '#ffffff',
+                  fontFamily,
                 }}
               >
                 {lyric.text}
