@@ -5,17 +5,24 @@ import { Music } from './music'
 import type { LyricLine } from './music/utils/srt-parser'
 import { parseSRT } from './music/utils/srt-parser'
 
-type MusicProps = {
+export type MusicProps = {
   lyrics: LyricLine[]
+  coverPath: string
+  audioPath: string
+  srtPath: string
+  songTitle: string
 }
 
 // 计算视频时长的函数
-const calculateMetadata: CalculateMetadataFunction<MusicProps> = async () => {
+const calculateMetadata: CalculateMetadataFunction<MusicProps> = async ({
+  props,
+}) => {
+  console.log(props)
   const fps = 60
 
   // 获取音频时长(秒)
   const { slowDurationInSeconds } = await parseMedia({
-    src: staticFile('誓燃山河.mp3'),
+    src: staticFile(props.audioPath),
     fields: { slowDurationInSeconds: true },
   })
 
@@ -23,15 +30,18 @@ const calculateMetadata: CalculateMetadataFunction<MusicProps> = async () => {
   const durationInFrames = Math.ceil(slowDurationInSeconds * fps)
 
   // 读取并解析 SRT 文件
-  const srtPath = staticFile('誓燃山河.srt')
-  const srtResponse = await fetch(srtPath)
+  const srtFilePath = staticFile(props.srtPath)
+  const srtResponse = await fetch(srtFilePath)
   const srtContent = await srtResponse.text()
   const lyrics = parseSRT(srtContent)
+
+  console.log(lyrics)
 
   return {
     fps,
     durationInFrames,
     props: {
+      ...props,
       lyrics,
     },
   }
@@ -44,6 +54,10 @@ export const RemotionRoot = () => (
       component={Music}
       defaultProps={{
         lyrics: [],
+        coverPath: '天命破cover.png',
+        audioPath: '天命破.mp3',
+        srtPath: '天命破.srt',
+        songTitle: '天命破',
       }}
       durationInFrames={1000}
       fps={60}

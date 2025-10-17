@@ -40,9 +40,9 @@ export const Lyrics = ({ currentTime, lyrics, fontFamily }: LyricsProps) => {
     frame: frame - transitionStartFrame,
     fps,
     config: {
-      damping: 20,
-      mass: 0.5,
-      stiffness: 100,
+      damping: 18,
+      mass: 0.3,
+      stiffness: 150,
     },
   })
 
@@ -88,9 +88,9 @@ export const Lyrics = ({ currentTime, lyrics, fontFamily }: LyricsProps) => {
             frame: frame - lyricStartFrame,
             fps,
             config: {
-              damping: 15,
-              mass: 0.3,
-              stiffness: 120,
+              damping: 12,
+              mass: 0.2,
+              stiffness: 180,
             },
           })
 
@@ -108,7 +108,7 @@ export const Lyrics = ({ currentTime, lyrics, fontFamily }: LyricsProps) => {
             config: {
               damping: 12,
               mass: 0.2,
-              stiffness: 150,
+              stiffness: 180,
             },
           })
 

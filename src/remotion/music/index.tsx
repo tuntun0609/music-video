@@ -22,9 +22,18 @@ const { fontFamily } = loadFont()
 
 type MusicProps = {
   lyrics: LyricLine[]
+  coverPath: string
+  audioPath: string
+  srtPath: string
+  songTitle: string
 }
 
-export const Music = ({ lyrics }: MusicProps) => {
+export const Music = ({
+  lyrics,
+  coverPath,
+  audioPath,
+  songTitle,
+}: MusicProps) => {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
@@ -44,7 +53,7 @@ export const Music = ({ lyrics }: MusicProps) => {
   useEffect(() => {
     const loadColorScheme = async () => {
       try {
-        const coverUrl = staticFile('cover.png')
+        const coverUrl = staticFile(coverPath)
         const { hue } = await extractDominantHue(coverUrl)
         const scheme = generateColorScheme(hue)
         setColorScheme(scheme)
@@ -55,7 +64,7 @@ export const Music = ({ lyrics }: MusicProps) => {
     }
 
     loadColorScheme()
-  }, [])
+  }, [coverPath])
 
   return (
     <div
@@ -69,11 +78,11 @@ export const Music = ({ lyrics }: MusicProps) => {
     >
       <div className="relative flex h-full w-full flex-col p-12">
         {/* 音频 */}
-        <Html5Audio src={staticFile('誓燃山河.mp3')} />
+        <Html5Audio src={staticFile(audioPath)} />
 
         {/* 唱片区域 - 主视觉焦点 */}
         <div className="relative flex flex-[2] items-center justify-center">
-          <VinylRecord frame={frame} />
+          <VinylRecord coverPath={coverPath} frame={frame} />
         </div>
 
         {/* 歌曲名字 - 突出显示 */}
@@ -86,7 +95,7 @@ export const Music = ({ lyrics }: MusicProps) => {
               fontFamily,
             }}
           >
-            誓燃山河
+            {songTitle}
           </h1>
         </div>
 

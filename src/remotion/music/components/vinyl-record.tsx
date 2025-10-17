@@ -2,9 +2,10 @@ import { Img, staticFile, useVideoConfig } from 'remotion'
 
 type VinylRecordProps = {
   readonly frame: number
+  readonly coverPath: string
 }
 
-export const VinylRecord = ({ frame }: VinylRecordProps) => {
+export const VinylRecord = ({ frame, coverPath }: VinylRecordProps) => {
   const { width } = useVideoConfig()
 
   // 根据帧数计算旋转角度,持续旋转
@@ -27,7 +28,7 @@ export const VinylRecord = ({ frame }: VinylRecordProps) => {
         <Img
           alt="Album Cover"
           className="h-full w-full rounded-full object-cover"
-          src={staticFile('cover.png')}
+          src={staticFile(coverPath)}
           style={{
             border: '28px solid rgba(0, 0, 0, 0.1)',
           }}
