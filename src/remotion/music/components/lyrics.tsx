@@ -95,7 +95,7 @@ export const Lyrics = ({ currentTime, lyrics, fontFamily }: LyricsProps) => {
           })
 
           const scale = isCurrentLyric
-            ? interpolate(scaleSpring, [0, 1], [1, 1.2], {
+            ? interpolate(scaleSpring, [0, 1], [1, 1.3], {
                 extrapolateLeft: 'clamp',
                 extrapolateRight: 'clamp',
               })

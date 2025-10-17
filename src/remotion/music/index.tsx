@@ -71,17 +71,8 @@ export const Music = ({ lyrics }: MusicProps) => {
         {/* 音频 */}
         <Html5Audio src={staticFile('誓燃山河.mp3')} />
 
-        {/* 背景波形可视化 - 层次1 */}
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <AudioVisualizer barCount={64} color="#ffffff" style="wave" />
-        </div>
-
         {/* 唱片区域 - 主视觉焦点 */}
         <div className="relative flex flex-[2] items-center justify-center">
-          {/* 唱片周围的圆形可视化 - 层次2 */}
-          <div className="pointer-events-none absolute inset-0 opacity-30">
-            <AudioVisualizer barCount={64} color="#ffffff" style="circle" />
-          </div>
           <VinylRecord frame={frame} />
         </div>
 
@@ -108,10 +99,16 @@ export const Music = ({ lyrics }: MusicProps) => {
           />
         </div>
       </div>
-
-      {/* 底部条形频谱 - 层次3 */}
-      <div className="pointer-events-none absolute right-0 bottom-0 left-0 opacity-25">
-        <AudioVisualizer barCount={64} color="#ffffff" style="bars" />
+      {/* 唱片周围的圆形可视化 - 唯一的音频可视化效果 */}
+      <div className="pointer-events-none absolute inset-0 opacity-60">
+        <AudioVisualizer
+          barCount={64}
+          color="#ffffff"
+          maxHeight={0.3}
+          smoothing={1}
+          style="bars"
+          timeSmoothing={0.85}
+        />
       </div>
     </div>
   )
