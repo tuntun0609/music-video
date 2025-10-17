@@ -7,6 +7,7 @@ import {
   useVideoConfig,
 } from 'remotion'
 
+import { AudioVisualizer } from './components/audio-visualizer'
 import { Lyrics } from './components/lyrics'
 import { VinylRecord } from './components/vinyl-record'
 import './index.css'
@@ -58,7 +59,7 @@ export const Music = ({ lyrics }: MusicProps) => {
 
   return (
     <div
-      className="flex h-full w-full flex-col p-12"
+      className="relative flex h-full w-full flex-col"
       style={{
         background: `linear-gradient(135deg, 
           hsl(${colorScheme.colors[0].hue}, ${colorScheme.colors[0].saturation}%, ${colorScheme.colors[0].lightness}%), 
@@ -66,35 +67,51 @@ export const Music = ({ lyrics }: MusicProps) => {
           hsl(${colorScheme.colors[2].hue}, ${colorScheme.colors[2].saturation}%, ${colorScheme.colors[2].lightness}%))`,
       }}
     >
-      {/* 音频 */}
-      <Html5Audio src={staticFile('誓燃山河.mp3')} />
+      <div className="relative flex h-full w-full flex-col p-12">
+        {/* 音频 */}
+        <Html5Audio src={staticFile('誓燃山河.mp3')} />
 
-      {/* 唱片区域 - 主视觉焦点 */}
-      <div className="flex flex-[2] items-center justify-center">
-        <VinylRecord frame={frame} />
+        {/* 背景波形可视化 - 层次1 */}
+        <div className="pointer-events-none absolute inset-0 opacity-20">
+          <AudioVisualizer barCount={64} color="#ffffff" style="wave" />
+        </div>
+
+        {/* 唱片区域 - 主视觉焦点 */}
+        <div className="relative flex flex-[2] items-center justify-center">
+          {/* 唱片周围的圆形可视化 - 层次2 */}
+          <div className="pointer-events-none absolute inset-0 opacity-30">
+            <AudioVisualizer barCount={64} color="#ffffff" style="circle" />
+          </div>
+          <VinylRecord frame={frame} />
+        </div>
+
+        {/* 歌曲名字 - 突出显示 */}
+        <div className="flex flex-[0.6] items-center justify-center">
+          <h1
+            className="font-bold text-shadow-lg text-white tracking-wider"
+            style={{
+              fontSize: '5.5rem',
+              letterSpacing: '0.2em',
+              fontFamily,
+            }}
+          >
+            誓燃山河
+          </h1>
+        </div>
+
+        {/* 歌词区域 - 次要信息 */}
+        <div className="relative flex-[1.8] pt-2">
+          <Lyrics
+            currentTime={currentTime}
+            fontFamily={fontFamily}
+            lyrics={lyrics}
+          />
+        </div>
       </div>
 
-      {/* 歌曲名字 - 突出显示 */}
-      <div className="flex flex-[0.6] items-center justify-center">
-        <h1
-          className="font-bold text-shadow-lg text-white tracking-wider"
-          style={{
-            fontSize: '5.5rem',
-            letterSpacing: '0.2em',
-            fontFamily,
-          }}
-        >
-          誓燃山河
-        </h1>
-      </div>
-
-      {/* 歌词区域 - 次要信息 */}
-      <div className="flex-[1.8] pt-2">
-        <Lyrics
-          currentTime={currentTime}
-          fontFamily={fontFamily}
-          lyrics={lyrics}
-        />
+      {/* 底部条形频谱 - 层次3 */}
+      <div className="pointer-events-none absolute right-0 bottom-0 left-0 opacity-25">
+        <AudioVisualizer barCount={64} color="#ffffff" style="bars" />
       </div>
     </div>
   )
