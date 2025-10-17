@@ -1,5 +1,4 @@
 import { useAudioData, visualizeAudio } from '@remotion/media-utils'
-import React from 'react'
 import {
   interpolate,
   spring,
@@ -15,7 +14,7 @@ type AudioVisualizerProps = {
   readonly audioSrc?: string
   readonly smoothing?: number
   readonly maxHeight?: number // 波形最高高度，相对于视频高度的比例
-  readonly timeSmoothing?: number // 时间平滑系数，值越大变化越慢 (0-1)，默认 0.7
+  readonly timeSmoothing?: number // 时间平滑系数，值越大变化越慢 (0-1)，默认 0.85
 }
 
 export const AudioVisualizer = ({
@@ -25,13 +24,10 @@ export const AudioVisualizer = ({
   audioSrc = staticFile('誓燃山河.mp3'),
   smoothing = 0.5,
   maxHeight = 0.8,
-  timeSmoothing = 0.7,
+  timeSmoothing = 0.85,
 }: AudioVisualizerProps) => {
   const frame = useCurrentFrame()
   const { width, height, fps } = useVideoConfig()
-
-  // 使用状态来存储上一帧的值，实现时间平滑（必须在所有条件判断之前）
-  const previousValues = React.useRef<number[]>(new Array(barCount).fill(0))
 
   // 验证 barCount 是否为 2 的幂次方
   const isPowerOfTwo = (n: number) => {
@@ -54,36 +50,56 @@ export const AudioVisualizer = ({
     return null
   }
 
-  // 使用 Remotion 的 visualizeAudio API 获取当前帧的音频频谱
-  const visualization = visualizeAudio({
-    fps,
-    frame,
-    audioData,
-    numberOfSamples: barCount,
-  })
+  // 优化：缓存当前帧和历史帧的可视化数据，避免重复计算
+  // 增加平滑帧数，让波形变化更慢更平缓
+  const framesToAverage = Math.max(1, Math.floor(timeSmoothing * 10))
+  const visualizationCache: number[][] = []
 
-  // 获取每个条形的高度并进行对数缩放以增强视觉效果
+  // 只计算一次所需的所有帧数据
+  for (let i = 0; i < framesToAverage; i++) {
+    const targetFrame = frame - i
+    if (targetFrame >= 0) {
+      const frameData = visualizeAudio({
+        fps,
+        frame: targetFrame,
+        audioData,
+        numberOfSamples: barCount,
+      })
+      visualizationCache.push(frameData)
+    }
+  }
+
+  // 获取多帧的平均值来实现时间平滑
+  const getSmoothedVisualization = (index: number) => {
+    let sum = 0
+    let count = 0
+
+    for (let i = 0; i < visualizationCache.length; i++) {
+      // 使用指数衰减权重，越近的帧权重越高
+      // 降低衰减速度（从0.5改为0.3），让历史帧影响更持久，波形变化更慢
+      const weight = Math.exp(-i * 0.3)
+      sum += (visualizationCache[i]?.[index] || 0) * weight
+      count += weight
+    }
+
+    return count > 0 ? sum / count : 0
+  }
+
+  // 获取每个条形的高度并进行缩放以增强视觉效果
   const getBarHeight = (index: number) => {
-    const rawValue = visualization[index] || 0
+    // 使用时间平滑的值
+    const rawValue = getSmoothedVisualization(index)
 
     // 应用空间平滑处理（相邻条形）
     const spatialSmoothing = smoothing * 0.3
     const spatialSmoothedValue =
       spatialSmoothing > 0
         ? rawValue * (1 - spatialSmoothing) +
-          (visualization[Math.max(0, index - 1)] || 0) * spatialSmoothing
+          getSmoothedVisualization(Math.max(0, index - 1)) * spatialSmoothing
         : rawValue
 
-    // 应用时间平滑处理（帧间过渡）
-    const prevValue = previousValues.current[index] || 0
-    const timeSmoothedValue =
-      prevValue * timeSmoothing + spatialSmoothedValue * (1 - timeSmoothing)
-
-    // 保存当前值供下一帧使用
-    previousValues.current[index] = timeSmoothedValue
-
-    // 使用更激进的指数缩放增强视觉效果
-    return timeSmoothedValue ** 0.5
+    // 使用指数缩放增强视觉效果
+    return spatialSmoothedValue ** 0.5
   }
 
   // 条形可视化

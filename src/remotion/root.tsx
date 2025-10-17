@@ -62,7 +62,7 @@ export const RemotionRoot = () => (
       durationInFrames={1000}
       fps={60}
       height={1440}
-      id={'music-video'}
+      id={'天命破'}
       width={1080}
     />
   </>
