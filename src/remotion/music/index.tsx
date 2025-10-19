@@ -1,4 +1,5 @@
-import { loadFont } from '@remotion/google-fonts/MaShanZheng'
+// import { loadFont } from '@remotion/google-fonts/MaShanZheng'
+import { loadFont } from '@remotion/google-fonts/ZCOOLQingKeHuangYou'
 import { useEffect, useState } from 'react'
 import {
   Html5Audio,
@@ -19,7 +20,6 @@ import {
 } from './utils/color-extractor'
 import type { LyricLine } from './utils/srt-parser'
 
-// 加载中文毛笔字体 - 马善政楷书(更易读)
 const { fontFamily } = loadFont()
 
 type MusicProps = {

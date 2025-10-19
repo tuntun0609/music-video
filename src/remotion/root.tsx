@@ -17,7 +17,6 @@ export type MusicProps = {
 const calculateMetadata: CalculateMetadataFunction<MusicProps> = async ({
   props,
 }) => {
-  console.log(props)
   const fps = 60
 
   // 获取音频时长(秒)
@@ -34,8 +33,6 @@ const calculateMetadata: CalculateMetadataFunction<MusicProps> = async ({
   const srtResponse = await fetch(srtFilePath)
   const srtContent = await srtResponse.text()
   const lyrics = parseSRT(srtContent)
-
-  console.log(lyrics)
 
   return {
     fps,
@@ -54,15 +51,15 @@ export const RemotionRoot = () => (
       component={Music}
       defaultProps={{
         lyrics: [],
-        coverPath: '天命破cover.png',
-        audioPath: '天命破.mp3',
-        srtPath: '天命破.srt',
-        songTitle: '天命破',
+        coverPath: 'Crownless.png',
+        audioPath: 'Crownless.mp3',
+        srtPath: 'Crownless.srt',
+        songTitle: 'Crownless',
       }}
       durationInFrames={1000}
       fps={60}
       height={1440}
-      id={'天命破'}
+      id={'Crownless'}
       width={1080}
     />
   </>

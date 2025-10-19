@@ -7,7 +7,7 @@ export type LyricLine = {
 
 /**
  * 将 SRT 时间格式转换为秒
- * @param timeString - SRT 时间格式字符串 (例如: "00:00:25,850")
+ * @param timeString - SRT 时间格式字符串 (例如: "00:00:25,850" 或 "01:08,000")
  * @returns 秒数
  */
 function parseTimeToSeconds(timeString: string): number {
@@ -15,16 +15,32 @@ function parseTimeToSeconds(timeString: string): number {
   const time = parts[0]
   const milliseconds = parts[1]
   const timeParts = time.split(':').map(Number)
-  const hours = timeParts[0]
-  const minutes = timeParts[1]
-  const seconds = timeParts[2]
+
+  // 兼容两种格式:
+  // 1. HH:MM:SS,mmm (例如: 00:00:25,850)
+  // 2. MM:SS,mmm (例如: 01:08,000)
+  let hours = 0
+  let minutes = 0
+  let seconds = 0
+
+  if (timeParts.length === 3) {
+    // HH:MM:SS 格式
+    hours = timeParts[0]
+    minutes = timeParts[1]
+    seconds = timeParts[2]
+  } else if (timeParts.length === 2) {
+    // MM:SS 格式
+    minutes = timeParts[0]
+    seconds = timeParts[1]
+  }
 
   return hours * 3600 + minutes * 60 + seconds + Number(milliseconds) / 1000
 }
 
 // 时间轴正则表达式,定义在顶层
+// 兼容两种格式: HH:MM:SS,mmm 和 MM:SS,mmm
 const TIME_PATTERN =
-  /(\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2},\d{3})/
+  /(\d{2}:\d{2}(?::\d{2})?,\d{3})\s*-->\s*(\d{2}:\d{2}(?::\d{2})?,\d{3})/
 
 /**
  * 创建歌词行对象
