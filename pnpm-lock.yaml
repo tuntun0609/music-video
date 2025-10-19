@@ -41,6 +41,9 @@ importers:
       remotion:
         specifier: 4.0.363
         version: 4.0.363(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      rgbaster:
+        specifier: ^2.1.1
+        version: 2.1.1
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.6
@@ -2758,6 +2761,9 @@ packages:
 
   rfdc@1.4.1:
     resolution: {integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==}
+
+  rgbaster@2.1.1:
+    resolution: {integrity: sha512-vUQI+ldMMSGXEbWtqb/6aqLY1LHc33OtXg2Q9S0TCxzt2KxGncRJB6dk860KzhWTjms+Fz4wkxrJu8MlCrFpYg==}
 
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
@@ -5705,6 +5711,8 @@ snapshots:
   reusify@1.1.0: {}
 
   rfdc@1.4.1: {}
+
+  rgbaster@2.1.1: {}
 
   run-parallel@1.2.0:
     dependencies:

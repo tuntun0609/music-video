@@ -12,8 +12,10 @@ import { Lyrics } from './components/lyrics'
 import { VinylRecord } from './components/vinyl-record'
 import './index.css'
 import {
-  extractDominantHue,
+  extractDominantColor,
   generateColorScheme,
+  type RGBColor,
+  rgbToString,
 } from './utils/color-extractor'
 import type { LyricLine } from './utils/srt-parser'
 
@@ -40,12 +42,12 @@ export const Music = ({
   // 计算当前时间(秒)
   const currentTime = frame / fps
 
-  // 从封面提取的颜色配置
-  const [colorScheme, setColorScheme] = useState({
+  // 从封面提取的颜色配置（使用 RGB）
+  const [colorScheme, setColorScheme] = useState<{ colors: RGBColor[] }>({
     colors: [
-      { hue: 5, saturation: 75, lightness: 82 },
-      { hue: 12, saturation: 80, lightness: 78 },
-      { hue: 0, saturation: 70, lightness: 85 },
+      { r: 220, g: 180, b: 200 },
+      { r: 200, g: 160, b: 180 },
+      { r: 240, g: 200, b: 220 },
     ],
   })
 
@@ -54,8 +56,10 @@ export const Music = ({
     const loadColorScheme = async () => {
       try {
         const coverUrl = staticFile(coverPath)
-        const { hue } = await extractDominantHue(coverUrl)
-        const scheme = generateColorScheme(hue)
+        const dominantColor = await extractDominantColor(coverUrl)
+        console.log('提取的主色调:', dominantColor)
+        const scheme = generateColorScheme(dominantColor)
+        console.log('生成的配色方案:', scheme)
         setColorScheme(scheme)
       } catch (error) {
         console.error('Failed to extract colors from cover:', error)
@@ -71,9 +75,9 @@ export const Music = ({
       className="relative flex h-full w-full flex-col"
       style={{
         background: `linear-gradient(135deg, 
-          hsl(${colorScheme.colors[0].hue}, ${colorScheme.colors[0].saturation}%, ${colorScheme.colors[0].lightness}%), 
-          hsl(${colorScheme.colors[1].hue}, ${colorScheme.colors[1].saturation}%, ${colorScheme.colors[1].lightness}%),
-          hsl(${colorScheme.colors[2].hue}, ${colorScheme.colors[2].saturation}%, ${colorScheme.colors[2].lightness}%))`,
+          ${rgbToString(colorScheme.colors[0])}, 
+          ${rgbToString(colorScheme.colors[1])},
+          ${rgbToString(colorScheme.colors[2])})`,
       }}
     >
       <div className="relative flex h-full w-full flex-col p-12">

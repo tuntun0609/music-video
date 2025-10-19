@@ -1,306 +1,166 @@
+// @ts-nocheck
+import analyze from 'rgbaster'
+
+// 正则表达式常量，用于解析 rgb 字符串
+const RGB_REGEX = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
+
+/**
+ * RGB 颜色类型
+ */
+export type RGBColor = {
+  r: number
+  g: number
+  b: number
+}
+
 /**
  * 从图片URL中提取主色调
- * 使用canvas API采样图片像素并计算平均色相
+ * 使用 rgbaster 库分析图片并提取主色，直接返回 RGB 值
  */
-export const extractDominantHue = (
+export const extractDominantColor = async (
   imageUrl: string
-): Promise<{ hue: number; saturation: number; lightness: number }> =>
-  new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-
-    img.addEventListener('load', () => {
-      const result = processImage(img)
-      resolve(result)
+): Promise<RGBColor> => {
+  try {
+    // 使用 rgbaster 分析图片
+    // scale: 0.6 用于加快处理速度，同时保持较好的准确度
+    // ignore: 忽略纯白色和纯黑色
+    const result = await analyze(imageUrl, {
+      scale: 0.6,
+      ignore: ['rgb(255,255,255)', 'rgb(0,0,0)'],
     })
 
-    img.addEventListener('error', () => {
-      reject(new Error('Failed to load image'))
-    })
-
-    img.src = imageUrl
-  })
-
-/**
- * 处理图片并提取颜色
- */
-function processImage(img: HTMLImageElement): {
-  hue: number
-  saturation: number
-  lightness: number
-} {
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-
-  if (!ctx) {
-    return { hue: 0, saturation: 70, lightness: 80 }
-  }
-
-  // 使用更大的采样尺寸以提高准确度
-  const size = 200
-  canvas.width = size
-  canvas.height = size
-
-  // 绘制图片到canvas
-  ctx.drawImage(img, 0, 0, size, size)
-
-  // 获取图片数据
-  const imageData = ctx.getImageData(0, 0, size, size)
-  const rgbColors = extractRgbColors(imageData.data)
-
-  if (rgbColors.length === 0) {
-    return { hue: 0, saturation: 70, lightness: 80 }
-  }
-
-  // 使用K-means聚类找到主色调
-  const dominantColor = findDominantColorByKMeans(rgbColors, 5)
-  return rgbToHslObject(dominantColor.r, dominantColor.g, dominantColor.b)
-}
-
-/**
- * 从像素数据中提取RGB颜色
- */
-function extractRgbColors(
-  data: Uint8ClampedArray
-): Array<{ r: number; g: number; b: number }> {
-  const colors: Array<{ r: number; g: number; b: number }> = []
-
-  // 每隔几个像素采样一次
-  for (let i = 0; i < data.length; i += 12) {
-    const r = data[i]
-    const g = data[i + 1]
-    const b = data[i + 2]
-    const a = data[i + 3]
-
-    // 跳过透明像素
-    if (a < 128) {
-      continue
+    if (!result || result.length === 0) {
+      // 返回默认颜色（柔和的蓝色）
+      return { r: 100, g: 150, b: 200 }
     }
 
-    // 跳过太亮或太暗的像素
-    const brightness = (r + g + b) / 3
-    if (brightness > 250 || brightness < 10) {
-      continue
-    }
+    // 找到饱和度最高的颜色作为主色
+    let bestColor = result[0]
+    let maxSaturation = 0
 
-    colors.push({ r, g, b })
-  }
+    for (const item of result.slice(0, 10)) {
+      // 只检查前10个主要颜色
+      const rgb = parseRgbString(item.color)
+      if (!rgb) {
+        continue
+      }
 
-  return colors
-}
+      // 计算颜色的饱和度（使用简化的方法）
+      const saturation = calculateSaturation(rgb.r, rgb.g, rgb.b)
+      const lightness = calculateLightness(rgb.r, rgb.g, rgb.b)
 
-/**
- * 使用简化的K-means聚类算法找出主色调
- */
-function findDominantColorByKMeans(
-  colors: Array<{ r: number; g: number; b: number }>,
-  k: number
-): { r: number; g: number; b: number } {
-  if (colors.length === 0) {
-    return { r: 255, g: 200, b: 200 }
-  }
+      // 跳过太亮或太暗的颜色
+      if (lightness < 25 || lightness > 240) {
+        continue
+      }
 
-  // 初始化聚类中心
-  const centroids = initializeCentroids(colors, k)
-
-  // 迭代优化聚类
-  for (let iter = 0; iter < 10; iter++) {
-    const clusters = assignColorsToClusters(colors, centroids, k)
-    updateCentroids(centroids, clusters)
-  }
-
-  // 返回饱和度最高的聚类中心
-  return findMostSaturatedCentroid(centroids)
-}
-
-/**
- * 初始化K-means聚类中心
- */
-function initializeCentroids(
-  colors: Array<{ r: number; g: number; b: number }>,
-  k: number
-): Array<{ r: number; g: number; b: number }> {
-  const centroids: Array<{ r: number; g: number; b: number }> = []
-  for (let i = 0; i < k; i++) {
-    const randomIndex = Math.floor((i / k) * colors.length)
-    centroids.push({ ...colors[randomIndex] })
-  }
-  return centroids
-}
-
-/**
- * 将颜色分配到最近的聚类中心
- */
-function assignColorsToClusters(
-  colors: Array<{ r: number; g: number; b: number }>,
-  centroids: Array<{ r: number; g: number; b: number }>,
-  k: number
-): Array<Array<{ r: number; g: number; b: number }>> {
-  const clusters: Array<Array<{ r: number; g: number; b: number }>> =
-    Array.from({ length: k }, () => [])
-
-  for (const color of colors) {
-    const clusterIndex = findNearestCentroid(color, centroids)
-    clusters[clusterIndex].push(color)
-  }
-
-  return clusters
-}
-
-/**
- * 找到最近的聚类中心索引
- */
-function findNearestCentroid(
-  color: { r: number; g: number; b: number },
-  centroids: Array<{ r: number; g: number; b: number }>
-): number {
-  let minDist = Number.POSITIVE_INFINITY
-  let clusterIndex = 0
-
-  for (let i = 0; i < centroids.length; i++) {
-    const dist = colorDistance(color, centroids[i])
-    if (dist < minDist) {
-      minDist = dist
-      clusterIndex = i
-    }
-  }
-
-  return clusterIndex
-}
-
-/**
- * 更新聚类中心
- */
-function updateCentroids(
-  centroids: Array<{ r: number; g: number; b: number }>,
-  clusters: Array<Array<{ r: number; g: number; b: number }>>
-): void {
-  for (let i = 0; i < centroids.length; i++) {
-    if (clusters[i].length > 0) {
-      centroids[i] = {
-        r: Math.round(
-          clusters[i].reduce((sum, c) => sum + c.r, 0) / clusters[i].length
-        ),
-        g: Math.round(
-          clusters[i].reduce((sum, c) => sum + c.g, 0) / clusters[i].length
-        ),
-        b: Math.round(
-          clusters[i].reduce((sum, c) => sum + c.b, 0) / clusters[i].length
-        ),
+      // 选择饱和度最高的颜色
+      if (saturation > maxSaturation) {
+        maxSaturation = saturation
+        bestColor = item
       }
     }
-  }
-}
 
-/**
- * 找出饱和度最高的聚类中心
- */
-function findMostSaturatedCentroid(
-  centroids: Array<{ r: number; g: number; b: number }>
-): { r: number; g: number; b: number } {
-  let bestCentroid = centroids[0]
-  let maxSaturation = 0
-
-  for (const centroid of centroids) {
-    const hsl = rgbToHsl(centroid.r, centroid.g, centroid.b)
-    if (hsl.s > maxSaturation) {
-      maxSaturation = hsl.s
-      bestCentroid = centroid
+    // 解析最终选择的颜色
+    const rgb = parseRgbString(bestColor.color)
+    if (!rgb) {
+      return { r: 100, g: 150, b: 200 }
     }
+
+    console.log('提取的主色调 RGB:', rgb)
+
+    return rgb
+  } catch (error) {
+    console.error('Failed to extract dominant color:', error)
+    // 返回默认颜色
+    return { r: 100, g: 150, b: 200 }
   }
-
-  return bestCentroid
 }
 
 /**
- * 计算两个颜色之间的欧几里得距离
+ * 解析 rgb(r, g, b) 字符串
  */
-function colorDistance(
-  c1: { r: number; g: number; b: number },
-  c2: { r: number; g: number; b: number }
-): number {
-  return Math.sqrt((c1.r - c2.r) ** 2 + (c1.g - c2.g) ** 2 + (c1.b - c2.b) ** 2)
-}
-
-/**
- * 将RGB转换为HSL (内部使用，返回0-1范围)
- */
-function rgbToHsl(
-  r: number,
-  g: number,
+function parseRgbString(rgbString: string): {
+  r: number
+  g: number
   b: number
-): { h: number; s: number; l: number } {
-  const red = r / 255
-  const green = g / 255
-  const blue = b / 255
-
-  const max = Math.max(red, green, blue)
-  const min = Math.min(red, green, blue)
-  const diff = max - min
-
-  let h = 0
-  let s = 0
-  const l = (max + min) / 2
-
-  if (diff !== 0) {
-    s = l > 0.5 ? diff / (2 - max - min) : diff / (max + min)
-
-    switch (max) {
-      case red: {
-        h = ((green - blue) / diff + (green < blue ? 6 : 0)) / 6
-        break
-      }
-      case green: {
-        h = ((blue - red) / diff + 2) / 6
-        break
-      }
-      case blue: {
-        h = ((red - green) / diff + 4) / 6
-        break
-      }
-      default: {
-        h = 0
-        break
-      }
-    }
+} | null {
+  const match = rgbString.match(RGB_REGEX)
+  if (!match) {
+    return null
   }
 
   return {
-    h: h * 360,
-    s,
-    l,
+    r: Number.parseInt(match[1], 10),
+    g: Number.parseInt(match[2], 10),
+    b: Number.parseInt(match[3], 10),
   }
 }
 
 /**
- * 将RGB转换为HSL对象 (导出使用，返回百分比)
+ * 计算颜色的饱和度（0-255范围）
+ * 使用简化方法：max - min
  */
-function rgbToHslObject(
-  r: number,
-  g: number,
-  b: number
-): { hue: number; saturation: number; lightness: number } {
-  const hsl = rgbToHsl(r, g, b)
-  return {
-    hue: hsl.h,
-    saturation: hsl.s * 100,
-    lightness: hsl.l * 100,
-  }
+function calculateSaturation(r: number, g: number, b: number): number {
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  return max - min
+}
+
+/**
+ * 计算颜色的亮度（0-255范围）
+ * 使用简化方法：(max + min) / 2
+ */
+function calculateLightness(r: number, g: number, b: number): number {
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  return (max + min) / 2
 }
 
 /**
  * 为视频生成配色方案
- * 基于主色调生成协调的渐变色
+ * 基于主色调 RGB 生成协调的渐变色
  */
-export function generateColorScheme(baseHue: number): {
-  colors: Array<{ hue: number; saturation: number; lightness: number }>
+export function generateColorScheme(baseColor: RGBColor): {
+  colors: RGBColor[]
 } {
-  // 生成三个和谐的色相值
+  // 生成三个和谐的颜色变体
+  // 方法：通过调整亮度和饱和度来创建渐变效果
+
+  const color1 = lightenColor(baseColor, 0.1) // 稍微变亮
+  const color2 = baseColor // 原色
+  const color3 = lightenColor(baseColor, 0.2) // 更亮
+
   return {
-    colors: [
-      { hue: baseHue, saturation: 75, lightness: 82 },
-      { hue: (baseHue + 10) % 360, saturation: 80, lightness: 78 },
-      { hue: (baseHue - 5 + 360) % 360, saturation: 70, lightness: 85 },
-    ],
+    colors: [color1, color2, color3],
   }
+}
+
+/**
+ * 调整颜色亮度
+ * @param color 原始颜色
+ * @param factor 调整因子（-1 到 1，负值变暗，正值变亮）
+ */
+function lightenColor(color: RGBColor, factor: number): RGBColor {
+  const adjust = (value: number) => {
+    if (factor > 0) {
+      // 变亮：向 255 靠近
+      return Math.round(value + (255 - value) * factor)
+    }
+    // 变暗：向 0 靠近
+    return Math.round(value * (1 + factor))
+  }
+
+  return {
+    r: Math.max(0, Math.min(255, adjust(color.r))),
+    g: Math.max(0, Math.min(255, adjust(color.g))),
+    b: Math.max(0, Math.min(255, adjust(color.b))),
+  }
+}
+
+/**
+ * 将 RGB 颜色转换为 CSS 字符串
+ */
+export function rgbToString(color: RGBColor): string {
+  return `rgb(${color.r}, ${color.g}, ${color.b})`
 }
